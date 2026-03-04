@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FaEnvelope, FaGoogle, FaLock } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api";
+import "./login.css";
 
 function Login() {
   const [form, setForm] = useState({
@@ -21,19 +23,20 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await API.post("/auth/login", form);
+      const payload = {
+        email: form.email.trim(),
+        password: form.password.trim()
+      };
 
-      alert(res.data.message);
+      const res = await API.post("/auth/login", payload);
 
-      // Store token + role
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("email", res.data.email);
-localStorage.setItem("name", res.data.name);
+      localStorage.setItem("name", res.data.name);
 
       const role = res.data.role;
 
-      // Role based redirect
       if (role === "student") {
         navigate("/student-dashboard");
       } 
@@ -42,38 +45,59 @@ localStorage.setItem("name", res.data.name);
       }
 
     } catch (err) {
-      alert("Login failed");
+      alert(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Login</h2>
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Welcome Back 👋</h2>
+        <p className="subtitle">Login to continue</p>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="email"
-          value={form.email}
-          placeholder="Email"
-          onChange={handleChange}
-        />
-        <br /><br />
+        <form onSubmit={handleSubmit}>
 
-        <input
-          name="password"
-          type="password"
-          value={form.password}
-          placeholder="Password"
-          onChange={handleChange}
-        />
-        <br /><br />
+          <div className="input-group">
+            <FaEnvelope className="input-icon" />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <button type="submit">Login</button>
-      </form>
+          <div className="input-group">
+            <FaLock className="input-icon" />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-      <p>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
+          <button type="submit" className="login-btn">
+            Login
+          </button>
+        </form>
+
+        <div className="divider">
+          <span>OR</span>
+        </div>
+
+        <button className="google-btn">
+          <FaGoogle /> Login with Google
+        </button>
+
+        <p className="register-text">
+          New user? <Link to="/register">Register</Link>
+        </p>
+      </div>
     </div>
   );
 }

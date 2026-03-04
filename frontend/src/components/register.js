@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { FaEnvelope, FaLock, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import API from "../api";
+import API from "../api"; // this stays same (since api is in src)
+import "./register.css"; // CSS in same folder
 
 function Register() {
   const [form, setForm] = useState({
@@ -23,7 +25,6 @@ function Register() {
       const res = await API.post("/auth/register", form);
       alert(res.data.message);
 
-      // Clear form after successful registration
       setForm({
         name: "",
         email: "",
@@ -36,44 +37,58 @@ function Register() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Register</h2>
+    <div className="register-container">
+      <div className="register-card">
+        <h2>Create Account</h2>
+        <p className="subtitle">Join us today 🚀</p>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <form onSubmit={handleSubmit}>
+          
+          <div className="input-group">
+            <FaUser className="input-icon" />
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <div className="input-group">
+            <FaEnvelope className="input-icon" />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <div className="input-group">
+            <FaLock className="input-icon" />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <button type="submit">Register</button>
-      </form>
+          <button type="submit" className="register-btn">
+            Register
+          </button>
+        </form>
 
-      <br />
-      <p>
-        Already have an account? <Link to="/">Login</Link>
-      </p>
+        <p className="login-text">
+          Already have an account? <Link to="/">Login</Link>
+        </p>
+      </div>
     </div>
   );
 }

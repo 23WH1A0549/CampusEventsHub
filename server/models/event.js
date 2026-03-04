@@ -7,6 +7,7 @@ const eventSchema = new mongoose.Schema({
     startTime: String,
     endTime: String,
     location: String,
+    maxRegistrations: Number,
     createdBy: String
 },{ timestamps:true });
 

@@ -1,0 +1,99 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #f0cca5, #f0b0d3);
+}
+
+/* Center container */
+.register-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card */
+.register-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 40px;
+  width: 380px;
+  border-radius: 18px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+/* Title */
+.register-card h2 {
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: #777;
+  margin-bottom: 30px;
+}
+
+/* Input group */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+.input-group input {
+  width: 100%;
+  padding: 12px 12px 12px 42px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+/* Focus */
+.input-group input:focus {
+  border-color: #f0b0d3;
+  box-shadow: 0 0 8px rgba(240, 176, 211, 0.5);
+}
+
+/* Icons */
+.input-icon {
+  position: absolute;
+  top: 13px;
+  left: 12px;
+  color: #888;
+}
+
+/* Button */
+.register-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3d464eeb);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.register-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Login text */
+.login-text {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.login-text a {
+  color: #f0b0d3;
+  text-decoration: none;
+  font-weight: bold;
+}
