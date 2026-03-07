@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+// ✅ ADD THIS LINE HERE
+console.log("JWT SECRET:", process.env.JWT_SECRET);
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -7,12 +10,11 @@ const cors = require("cors");
 const eventRoutes = require("./routes/eventroutes");
 const authRoutes = require("./routes/authroutes");
 
-const app = express();   // ✅ FIRST create app
+const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// ✅ THEN use routes
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
 

@@ -6,9 +6,15 @@ const eventSchema = new mongoose.Schema({
     date: String,
     startTime: String,
     endTime: String,
-    location: String,
+    venue: String,
     maxRegistrations: Number,
-    createdBy: String
+    createdBy: String,
+    image: String,
+    registrations: [
+    {
+      studentEmail: String
+    }
+  ]
 },{ timestamps:true });
 
 module.exports = mongoose.model("Event", eventSchema);

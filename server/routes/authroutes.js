@@ -3,25 +3,31 @@ const router = express.Router();
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
-// REGISTER
+
+// ================= REGISTER =================
 router.post("/register", async (req, res) => {
     try {
 
-        const { name, email, password, role } = req.body;
+        const { name, email, password } = req.body;
 
+        // Check if user already exists
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
+            return res.status(400).json({
+                message: "User already exists"
+            });
         }
 
+        // Create new user
         const user = new User({
             name,
             email,
             password,
-            role
+            role: "student"
         });
 
+        // Save user in MongoDB
         await user.save();
 
         res.status(201).json({
@@ -29,24 +35,32 @@ router.post("/register", async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ message: "Server error" });
+        console.log("REGISTER ERROR:", err);
+        res.status(500).json({
+            message: "Server error"
+        });
     }
 });
 
 
-// LOGIN
+// ================= LOGIN =================
 router.post("/login", async (req, res) => {
 
     try {
 
         const { email, password } = req.body;
 
+        // Find user
         const user = await User.findOne({ email });
 
+        // Check credentials
         if (!user || user.password !== password) {
-            return res.status(400).json({ message: "Invalid credentials" });
+            return res.status(400).json({
+                message: "Invalid credentials"
+            });
         }
 
+        // Generate JWT Token
         const token = jwt.sign(
             {
                 email: user.email,
@@ -55,16 +69,20 @@ router.post("/login", async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         );
-res.json({
-    message: "Login successful",
-    token,
-    role: user.role,
-    email: user.email,
-    name: user.name
-});
+
+        res.json({
+            message: "Login successful",
+            token,
+            role: user.role,
+            email: user.email,
+            name: user.name
+        });
 
     } catch (err) {
-        res.status(500).json({ message: "Server error" });
+        console.log("LOGIN ERROR:", err);
+        res.status(500).json({
+            message: "Server error"
+        });
     }
 });
 
