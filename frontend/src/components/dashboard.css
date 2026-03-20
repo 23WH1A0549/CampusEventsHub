@@ -167,3 +167,48 @@
   font-size: 32px;
   font-weight: bold;
 }
+.welcome-quote{
+  margin-top:10px;
+  font-style:italic;
+  color:#555;
+  font-size:16px;
+}
+.top-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 20px;
+  background:white;
+  border-bottom:1px solid #ddd;
+}
+
+.search-bar{
+  width:250px;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.user-info{
+  font-weight:bold;
+}
+
+.page-content{
+  padding:20px;
+}
+.event-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+}
+.event-card img{
+  margin-bottom:10px;
+  transition: transform 0.3s ease;
+}
+
+.event-card img:hover{
+  transform: scale(1.05);
+}
