@@ -32,8 +32,9 @@ function Register() {
       });
 
     } catch (err) {
-      alert("Registration failed");
-    }
+  console.log(err);
+  alert(err.response?.data?.message || "Registration failed");
+}
   };
 
   return (

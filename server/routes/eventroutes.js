@@ -24,7 +24,12 @@ router.post("/", async (req, res) => {
             date: req.body.date,
             startTime: req.body.startTime,
             endTime: req.body.endTime,
+
             location: req.body.location,
+
+            venue: req.body.venue,
+            maxRegistrations: req.body.maxRegistrations,
+            image: req.body.image,
             createdBy: req.body.createdBy
         });
 
