@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const Registration = require("../models/Registration");
+const Registration = require("../models/registration");
 const auth = require("../middleware/auth");
 
 // REGISTER FOR EVENT
-router.post("/", auth, async (req, res) => {
+/*router.post("/", auth, async (req, res) => {
 
     try {
 
@@ -24,7 +24,7 @@ router.post("/", auth, async (req, res) => {
     }
 
 });
-
+*/
 
 // GET USER REGISTRATIONS
 router.get("/", auth, async (req, res) => {

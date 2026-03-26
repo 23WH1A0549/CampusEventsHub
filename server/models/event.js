@@ -6,9 +6,11 @@ const eventSchema = new mongoose.Schema({
     date: String,
     startTime: String,
     endTime: String,
-    location: String,
+    venue: String,
+    image: String,
     maxRegistrations: Number,
-    createdBy: String
-},{ timestamps:true });
+    createdBy: String,
+    registrations: { type: [String], default: [] }  // 👈 Add this
+}, { timestamps: true });
 
 module.exports = mongoose.model("Event", eventSchema);
