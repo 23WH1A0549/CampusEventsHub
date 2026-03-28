@@ -228,6 +228,12 @@ function AdminDashboard() {
                   >
                     ✏ Edit
                   </button>
+                  <button
+  className="scan-btn"
+  onClick={() => navigate(`/admin-scan?eventId=${ev._id}`)}
+>
+            📷 Scan
+              </button>
 
                   <button
                     className="delete-btn"

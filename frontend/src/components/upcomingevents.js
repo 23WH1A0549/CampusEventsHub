@@ -5,107 +5,94 @@ function UpcomingEvents() {
 
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
+  const [myEventIds, setMyEventIds] = useState([]);
+
   const studentEmail = localStorage.getItem("email");
 
   useEffect(() => {
 
-    const fetchEvents = () => {
+    const fetchData = async () => {
 
-      axios.get("http://localhost:5000/api/events")
-        .then((res) => {
+      try {
 
-          const now = new Date();
+        // ✅ 1. Get all events
+        const eventRes = await axios.get("http://localhost:5000/api/events");
 
-          const upcoming = res.data.filter(event => {
+        // ✅ 2. Get my events (for "already registered")
+        const myRes = await axios.get(
+          `http://localhost:5000/api/events/my-events/${studentEmail}`
+        );
 
-            const start = new Date(`${event.date}T${event.startTime}`);
+        const myIds = myRes.data.map(ev => ev._id);
+        setMyEventIds(myIds);
 
-            return start > now;
+        const now = new Date();
 
-          });
+        const upcoming = eventRes.data.filter(event => {
+          const start = new Date(`${event.date}T${event.startTime}`);
+          return start > now;
+        });
 
-          // Sort by nearest event
-          upcoming.sort(
-            (a, b) =>
-              new Date(`${a.date}T${a.startTime}`) -
-              new Date(`${b.date}T${b.startTime}`)
-          );
+        upcoming.sort(
+          (a, b) =>
+            new Date(`${a.date}T${a.startTime}`) -
+            new Date(`${b.date}T${b.startTime}`)
+        );
 
-          setEvents(upcoming);
+        setEvents(upcoming);
 
-        })
-        .catch(err => console.log(err));
+      } catch (err) {
+        console.log(err);
+      }
 
     };
 
-    fetchEvents();
+    if (studentEmail) {
+      fetchData();
+    }
 
-    const interval = setInterval(fetchEvents, 60000);
-
+    const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
 
-  }, []);
+  }, [studentEmail]);
 
   const registerEvent = async (id) => {
 
-  try {
+    try {
 
-    await axios.post(
-      `http://localhost:5000/api/events/${id}/register`,
-      { email: studentEmail }
-    );
+      await axios.post(
+        `http://localhost:5000/api/events/${id}/register`,
+        { email: studentEmail }
+      );
 
-    alert("Registered Successfully");
-    window.location.reload();
+      alert("Registered Successfully ✅");
 
-  } catch (err) {
+      // ✅ Refresh instead of reload
+      window.location.reload();
 
-    if (err.response && err.response.data.message) {
-      alert(err.response.data.message);
-    } else {
-      alert("Registration Failed");
+    } catch (err) {
+
+      alert(err.response?.data?.message || "Registration Failed ❌");
+
     }
 
-  }
+  };
 
-};
   return (
 
     <div style={{ padding: "30px" }}>
 
-      <h1 style={{ fontSize: "32px", marginBottom: "10px" }}>
-        Upcoming Events
-      </h1>
-
-      <p style={{
-        fontStyle: "italic",
-        marginBottom: "20px",
-        color: "gray"
-      }}>
-        "The future belongs to those who participate today."
-      </p>
-
-      <p style={{ marginBottom: "15px", color: "#555" }}>
-        {events.length} upcoming events
-      </p>
+      <h1>Upcoming Events</h1>
 
       <input
         type="text"
         placeholder="Search Events..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          padding: "8px",
-          width: "250px",
-          marginBottom: "25px"
-        }}
+        style={{ padding: "8px", width: "250px", marginBottom: "25px" }}
       />
 
-      <div style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "25px"
-      }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "25px" }}>
 
         {events
           .filter(event =>
@@ -113,29 +100,26 @@ function UpcomingEvents() {
           )
           .map((event) => {
 
-            const maxSeats = event.maxRegistrations || 0;
-            const registeredCount = event.registrations?.length || 0;
+            // ✅ FIXED LOGIC
+            const maxSeats = Number(event.maxRegistrations) || 0;
+            const registeredCount = event.registrationCount || 0;
             const seatsLeft = maxSeats - registeredCount;
 
-            const alreadyRegistered = event.registrations?.some(
-              r => r.studentEmail === studentEmail
-            );
+            const alreadyRegistered = myEventIds.includes(event._id);
 
             const percentage =
-            maxSeats > 0 ? (registeredCount / maxSeats) * 100 : 0;
+              maxSeats > 0 ? (registeredCount / maxSeats) * 100 : 0;
 
             return (
 
-              <div
-                key={event._id}
+              <div key={event._id}
                 style={{
                   width: "300px",
                   borderRadius: "12px",
                   boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
                   overflow: "hidden",
                   background: "white"
-                }}
-              >
+                }}>
 
                 <img
                   src={event.image || "https://via.placeholder.com/300x150"}
@@ -155,18 +139,15 @@ function UpcomingEvents() {
                     {event.description}
                   </p>
 
-                  <p><b>Date:</b> {event.date}</p>
+                  <p>📅 {event.date}</p>
+                  <p>🕒 {event.startTime} - {event.endTime}</p>
+                  <p>📍 {event.venue}</p>
 
                   <p>
-                    <b>Time:</b> {event.startTime} - {event.endTime}
+                    Registrations: {registeredCount} / {maxSeats}
                   </p>
 
-                  <p><b>Venue:</b> {event.venue}</p>
-
-                  <p>
-                    <b>Registrations:</b> {registeredCount} / {maxSeats}
-                  </p>
-
+                  {/* Progress Bar */}
                   <div style={{
                     height: "8px",
                     background: "#ddd",
@@ -188,24 +169,16 @@ function UpcomingEvents() {
                   </p>
 
                   <button
-
                     onClick={() => registerEvent(event._id)}
-
                     disabled={alreadyRegistered || seatsLeft <= 0}
-
                     style={{
-                      marginTop: "10px",
                       width: "100%",
                       padding: "10px",
                       border: "none",
-                      background: alreadyRegistered
-                        ? "gray"
-                        : "#007bff",
+                      background: alreadyRegistered ? "gray" : "#007bff",
                       color: "white",
-                      borderRadius: "6px",
-                      cursor: alreadyRegistered ? "not-allowed" : "pointer"
+                      borderRadius: "6px"
                     }}
-
                   >
 
                     {alreadyRegistered

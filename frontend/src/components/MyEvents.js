@@ -8,19 +8,25 @@ function MyEvents() {
 
   useEffect(() => {
 
-    axios.get("http://localhost:5000/api/events")
-      .then((res) => {
+    const fetchMyEvents = async () => {
 
-        const registeredEvents = res.data.filter(event =>
-          event.registrations?.some(
-            r => r.studentEmail === studentEmail
-          )
+      try {
+
+        const res = await axios.get(
+          `http://localhost:5000/api/events/my-events/${studentEmail}`
         );
 
-        setEvents(registeredEvents);
+        setEvents(res.data);
 
-      })
-      .catch(err => console.log(err));
+      } catch (err) {
+        console.log(err);
+      }
+
+    };
+
+    if (studentEmail) {
+      fetchMyEvents();
+    }
 
   }, [studentEmail]);
 
@@ -50,14 +56,9 @@ function MyEvents() {
 
         {events.map((event) => {
 
-          const registeredCount = event.registrations?.length || 0;
-          const percentage =
-            (registeredCount / event.maxRegistrations) * 100;
-
           return (
 
             <div key={event._id}
-
               style={{
                 width: "300px",
                 borderRadius: "12px",
@@ -87,28 +88,6 @@ function MyEvents() {
                 <p>📅 {event.date}</p>
                 <p>🕒 {event.startTime} - {event.endTime}</p>
                 <p>📍 {event.venue}</p>
-
-                <p>
-                  Participants: {registeredCount}
-                </p>
-
-                {/* Progress Bar */}
-
-                <div style={{
-                  height: "8px",
-                  background: "#ddd",
-                  borderRadius: "5px",
-                  marginTop: "10px"
-                }}>
-
-                  <div style={{
-                    width: `${percentage}%`,
-                    height: "8px",
-                    background: "#4CAF50",
-                    borderRadius: "5px"
-                  }} />
-
-                </div>
 
               </div>
 

@@ -2,6 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import AddEvent from "./components/addevent";
 import AdminDashboard from "./components/admindashboard";
+import AdminScanner from "./components/AdminScanner";
 import Attendance from "./components/attendance";
 import Certificate from "./components/certificates";
 import CompletedEvents from "./components/completedevents";
@@ -10,8 +11,11 @@ import Login from "./components/login";
 import MyEvents from "./components/MyEvents";
 import OngoingEvents from "./components/ongoingevents";
 import Register from "./components/register";
+import StudentAttendance from "./components/StudentAttendance";
 import StudentDashboard from "./components/studentdashboard";
 import UpcomingEvents from "./components/upcomingevents";
+
+
 
 function App() {
   return (
@@ -24,10 +28,12 @@ function App() {
 
         {/* Admin */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-scan" element={<AdminScanner />} />
         <Route path="/addevent" element={<AddEvent />} />
 
         {/* Student Dashboard Layout */}
         <Route path="/student-dashboard" element={<DashboardLayout />}>
+        <Route path="attendance" element={<StudentAttendance />} />
 
           {/* Default Dashboard Page */}
           <Route index element={<StudentDashboard />} />

@@ -40,16 +40,17 @@ function OngoingEvents() {
 
   }, []);
 
+  // ✅ FIXED REGISTER FUNCTION
   const registerEvent = async (id) => {
 
     try {
 
       await axios.post(
-        `http://localhost:5000/api/events/register/${id}`,
-        { studentEmail }
+        `http://localhost:5000/api/events/${id}/register`,  // ✅ correct URL
+        { email: studentEmail } // ✅ correct body
       );
 
-      alert("Registered Successfully");
+      alert("Registered Successfully ✅");
       window.location.reload();
 
     } catch (err) {
@@ -57,7 +58,7 @@ function OngoingEvents() {
       if (err.response && err.response.data.message) {
         alert(err.response.data.message);
       } else {
-        alert("Registration Failed");
+        alert("Registration Failed ❌");
       }
 
     }
@@ -94,13 +95,11 @@ function OngoingEvents() {
           )
           .map((event) => {
 
-            const registeredCount = event.registrations?.length || 0;
+            // ✅ FIXED COUNT
+            const registeredCount = event.registrationCount || 0;
+
             const maxSeats = Number(event.maxRegistrations) || 0;
             const seatsLeft = maxSeats - registeredCount;
-
-            const alreadyRegistered = event.registrations?.some(
-              r => r.studentEmail === studentEmail
-            );
 
             const percentage =
               maxSeats > 0 ? (registeredCount / maxSeats) * 100 : 0;
@@ -143,6 +142,7 @@ function OngoingEvents() {
                     Registrations: {registeredCount} / {event.maxRegistrations}
                   </p>
 
+                  {/* Progress Bar */}
                   <div style={{
                     height: "8px",
                     background: "#ddd",
@@ -164,26 +164,23 @@ function OngoingEvents() {
                   </p>
 
                   <button
-
                     onClick={() => registerEvent(event._id)}
-
-                    disabled={alreadyRegistered || seatsLeft <= 0 || !studentEmail}
-
+                    disabled={seatsLeft <= 0 || !studentEmail}
                     style={{
                       width: "100%",
                       padding: "10px",
                       border: "none",
-                      background: alreadyRegistered ? "gray" : "#007bff",
+                      background: seatsLeft <= 0 ? "gray" : "#007bff",
                       color: "white",
-                      borderRadius: "6px"
+                      borderRadius: "6px",
+                      cursor: "pointer"
                     }}
-
                   >
 
-                    {alreadyRegistered
-                      ? "Already Registered"
-                      : seatsLeft <= 0
-                        ? "Event Full"
+                    {seatsLeft <= 0
+                      ? "Event Full"
+                      : !studentEmail
+                        ? "Login Required"
                         : "Register"}
 
                   </button>

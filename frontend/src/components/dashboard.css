@@ -212,3 +212,11 @@
 .event-card img:hover{
   transform: scale(1.05);
 }
+.scan-btn {
+  background: #007bff;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
