@@ -15,6 +15,7 @@ app.use(express.json());
 // ✅ THEN use routes
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/certificates", express.static("certificates"));
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Atlas Connected"))

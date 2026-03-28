@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const registrationSchema = new mongoose.Schema({
-
+ userName: String,
  userEmail:String,
  eventId: {
   type: mongoose.Schema.Types.ObjectId,

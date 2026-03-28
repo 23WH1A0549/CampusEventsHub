@@ -1,36 +1,15 @@
 // File: routes/eventroutes.js
+
 const express = require("express");
 const router = express.Router();
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
+const sendRegistrationEmail = require("../utils/sendEmail");
+const generateCertificate = require("../utils/generateCertificate");
 const mongoose = require("mongoose");
 
 // =======================
-// GET ALL EVENTS
-// =======================
-router.get("/", async (req, res) => {
-  try {
-    const events = await Event.find();
-
-    // Add registration count for each event
-    const eventsWithCount = await Promise.all(
-      events.map(async (ev) => {
-        const regCount = await Registration.countDocuments({ eventId: ev._id });
-        return {
-          ...ev._doc,
-          registrationCount: regCount,
-        };
-      })
-    );
-
-    res.status(200).json(eventsWithCount);
-  } catch (err) {
-    console.log("Fetch Events Error:", err);
-    res.status(500).json({ message: "Server Error" });
-  }
-});
-// =======================
-// GET MY EVENTS (FIXED)
+// GET MY EVENTS
 // =======================
 router.get("/my-events/:email", async (req, res) => {
   try {
@@ -40,13 +19,12 @@ router.get("/my-events/:email", async (req, res) => {
       userEmail: email,
     });
 
-    const eventIds = registrations.map(r => r.eventId);
+    const eventIds = registrations.map((r) => r.eventId);
 
     const events = await Event.find({
       _id: { $in: eventIds },
     });
 
-    // ✅ ADD COUNT HERE
     const eventsWithCount = await Promise.all(
       events.map(async (ev) => {
         const regCount = await Registration.countDocuments({
@@ -63,129 +41,182 @@ router.get("/my-events/:email", async (req, res) => {
     res.json(eventsWithCount);
 
   } catch (err) {
-    console.log("My Events Error:", err);
+    console.log("❌ My Events Error:", err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
 // =======================
-// ADD NEW EVENT
+// GET ALL EVENTS
 // =======================
-router.post("/", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const event = new Event({
-      title: req.body.title,
-      description: req.body.description,
-      date: req.body.date,
-      startTime: req.body.startTime,
-      endTime: req.body.endTime,
-      venue: req.body.venue,
-      image: req.body.image,
-      maxRegistrations: req.body.maxRegistrations,
-      createdBy: req.body.createdBy,
-    });
+    const events = await Event.find();
 
-    await event.save();
-    res.status(201).json(event);
-  } catch (err) {
-    console.log("Add Event Error:", err);
-    res.status(500).json({ message: "Server Error" });
-  }
-});
+    const eventsWithCount = await Promise.all(
+      events.map(async (ev) => {
+        const regCount = await Registration.countDocuments({
+          eventId: ev._id,
+        });
 
-// =======================
-// UPDATE EVENT
-// =======================
-router.put("/:id", async (req, res) => {
-  try {
-    const updatedEvent = await Event.findByIdAndUpdate(
-      req.params.id,
-      {
-        title: req.body.title,
-        description: req.body.description,
-        date: req.body.date,
-        startTime: req.body.startTime,
-        endTime: req.body.endTime,
-        venue: req.body.venue,
-        image: req.body.image,
-        maxRegistrations: req.body.maxRegistrations,
-      },
-      { new: true }
+        return {
+          ...ev._doc,
+          registrationCount: regCount,
+        };
+      })
     );
 
-    if (!updatedEvent) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    res.status(200).json(updatedEvent);
+    res.status(200).json(eventsWithCount);
   } catch (err) {
-    console.log("Update Event Error:", err);
+    console.log("❌ Fetch Events Error:", err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
 // =======================
-// DELETE EVENT
-// =======================
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedEvent = await Event.findByIdAndDelete(req.params.id);
-
-    if (!deletedEvent) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    await Registration.deleteMany({
-      eventId: new mongoose.Types.ObjectId(req.params.id)
-    });
-
-    res.status(200).json({ message: "Event deleted successfully" });
-  } catch (err) {
-    console.log("Delete Event Error:", err);
-    res.status(500).json({ message: "Server Error" });
-  }
-});
-
-// =======================
-// REGISTER STUDENT FOR EVENT
+// REGISTER
 // =======================
 router.post("/:id/register", async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, name } = req.body;
 
-if (!email) {
-  return res.status(400).json({ message: "Email required" });
-}
+    if (!email)
+      return res.status(400).json({ message: "Email required" });
+
     const event = await Event.findById(req.params.id);
 
-    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!event)
+      return res.status(404).json({ message: "Event not found" });
 
-    // Already registered?
-    const alreadyRegistered = await Registration.findOne({
+    const exists = await Registration.findOne({
       userEmail: email,
       eventId: event._id,
     });
-    if (alreadyRegistered)
+
+    if (exists)
       return res.status(400).json({ message: "Already registered" });
 
-    // Max capacity?
-    const totalRegs = await Registration.countDocuments({ eventId: event._id });
-    if (totalRegs >= event.maxRegistrations)
-      return res.status(400).json({ message: "Event is full" });
-
-    // Save registration
-    const registration = new Registration({
-      userEmail: email,
+    const total = await Registration.countDocuments({
       eventId: event._id,
     });
 
-    await registration.save();
-    res.status(200).json({ message: "Registered successfully" });
+    if (total >= event.maxRegistrations)
+      return res.status(400).json({ message: "Event full" });
+
+    const reg = new Registration({
+      userEmail: email,
+       userName: name,
+      eventId: event._id,
+    });
+
+    await reg.save();
+
+    console.log("📩 Sending Email...");
+    await sendRegistrationEmail(email, event);
+    console.log("✅ Email Sent");
+
+    res.json({ message: "Registered & email sent ✅" });
+
   } catch (err) {
-    console.log("Registration Error:", err);
+    console.log("❌ Register Error:", err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
+// =======================
+// MARK ATTENDANCE + CERTIFICATE
+// =======================
+router.post("/mark-attendance", async (req, res) => {
+  try {
+    const { email, eventId } = req.body;
+
+    if (!email || !eventId) {
+      return res.status(400).json({ message: "Missing data ❌" });
+    }
+
+    const registration = await Registration.findOne({
+      userEmail: email,
+      eventId: eventId,
+    }).populate("eventId");
+
+    if (!registration) {
+      return res.status(404).json({ message: "Not registered ❌" });
+    }
+
+    if (registration.attendanceStatus === "attended") {
+      return res.json({ message: "Already marked ✅" });
+    }
+
+    console.log("🎯 Generating certificate...");
+
+    const studentName = registration.userName || "Student";
+    const eventTitle = registration.eventId.title;
+
+    const fileName = await generateCertificate(studentName, eventTitle);
+
+    console.log("✅ Certificate created:", fileName);
+
+    registration.attendanceStatus = "attended";
+    registration.certificateUrl = `/certificates/${fileName}`;
+
+    await registration.save();
+
+    console.log("💾 Saved to DB");
+
+    res.json({
+      message: "Attendance marked & certificate generated 🎓",
+    });
+
+  } catch (err) {
+    console.log("❌ Attendance Error:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+// =======================
+// GET ATTENDANCE
+// =======================
+router.get("/attendance/:email", async (req, res) => {
+  try {
+    const regs = await Registration.find({
+      userEmail: req.params.email,
+    }).populate("eventId");
+
+    const data = regs.map((r) => ({
+      eventName: r.eventId?.title,
+      date: r.eventId?.date,
+      venue: r.eventId?.venue,
+      status: r.attendanceStatus,
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.log("❌ Attendance Error:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// =======================
+// GET CERTIFICATES
+// =======================
+router.get("/certificates/:email", async (req, res) => {
+  try {
+    const regs = await Registration.find({
+      userEmail: req.params.email,
+      attendanceStatus: "attended",
+      certificateUrl: { $ne: null },
+    }).populate("eventId");
+
+    const data = regs.map((r) => ({
+      eventName: r.eventId?.title,
+      date: r.eventId?.date,
+      certificateUrl: r.certificateUrl,
+    }));
+
+    res.json(data);
+  } catch (err) {
+    console.log("❌ Cert Error:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
 
 module.exports = router;
