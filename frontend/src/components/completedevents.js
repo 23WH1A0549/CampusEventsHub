@@ -15,18 +15,20 @@ function CompletedEvents() {
 
           const now = new Date();
 
+          // ✅ FIX: use endDate
           const completed = res.data.filter(event => {
 
-            const end = new Date(`${event.date}T${event.endTime}`);
+            const end = new Date(`${event.endDate}T${event.endTime}`);
 
             return end < now;
 
           });
 
+          // ✅ FIX: sorting using endDate
           completed.sort(
             (a, b) =>
-              new Date(`${b.date}T${b.endTime}`) -
-              new Date(`${a.date}T${a.endTime}`)
+              new Date(`${b.endDate}T${b.endTime}`) -
+              new Date(`${a.endDate}T${a.endTime}`)
           );
 
           setEvents(completed);
@@ -78,7 +80,15 @@ function CompletedEvents() {
               <h3>{event.title}</h3>
               <p>{event.description}</p>
 
-              <p>📅 {event.date}</p>
+              {/* ✅ DATE RANGE */}
+              <p>
+                📅 {
+                  event.startDate === event.endDate
+                    ? new Date(event.startDate).toDateString()
+                    : `${new Date(event.startDate).toDateString()} - ${new Date(event.endDate).toDateString()}`
+                }
+              </p>
+
               <p>🕒 {event.startTime} - {event.endTime}</p>
               <p>📍 {event.venue}</p>
 

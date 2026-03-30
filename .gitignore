@@ -1,6 +1,22 @@
-node_modules
+# Node modules
+node_modules/
+
+# Environment variables
 .env
-build
-dist
-frontend/node_modules
-server/node_modules
+
+# Build folders
+build/
+dist/
+
+# Certificates (generated files)
+certificates/
+server/certificates/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db

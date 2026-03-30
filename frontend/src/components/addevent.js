@@ -15,7 +15,8 @@ function AddEvent() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    date: "",
+    startdate: "",
+    endDate: "",
     startTime: "",
     endTime: "",
     venue: "",
@@ -31,13 +32,14 @@ function AddEvent() {
 
           if (event) {
             setForm({
-              title: event.title,
-              description: event.description,
-              date: event.date,
-              startTime: event.startTime,
-              endTime: event.endTime,
-              venue: event.venue,
-              maxRegistrations: event.maxRegistrations
+              title: event.title || "",
+              description: event.description || "",
+              startDate: event.startDate || "",
+              endDate: event.endDate || "",
+              startTime: event.startTime || "",
+              endTime: event.endTime || "",
+              venue: event.venue || "",
+              maxRegistrations: event.maxRegistrations || ""
             });
              setImage(event.image || "");
           }
@@ -56,6 +58,13 @@ function AddEvent() {
   // ✅ ADD OR UPDATE EVENT
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (
+  form.startDate === form.endDate 
+ 
+) {
+  alert("End time must be after start time ❌");
+  return;
+}
 
     try {
       const eventData = {
@@ -112,8 +121,16 @@ function AddEvent() {
         />
         <input
           type="date"
-          name="date"
-          value={form.date}
+          name="startDate"
+          value={form.startDate}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="date"
+          name="endDate"
+          value={form.endDate}
           onChange={handleChange}
           required
         />

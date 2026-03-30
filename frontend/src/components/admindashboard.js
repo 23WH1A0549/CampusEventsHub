@@ -26,11 +26,11 @@ function AdminDashboard() {
 
       const res = await API.get("/events");
 
-      // Sort latest events first
+      // ✅ Sort using startDate
       const sorted = res.data.sort(
         (a, b) =>
-          new Date(`${b.date}T${b.startTime}`) -
-          new Date(`${a.date}T${a.startTime}`)
+          new Date(`${b.startDate}T${b.startTime}`) -
+          new Date(`${a.startDate}T${a.startTime}`)
       );
 
       setEvents(sorted);
@@ -46,35 +46,42 @@ function AdminDashboard() {
   };
 
   const handleDelete = async (id) => {
-    try {
+  const confirmDelete = window.confirm("Are you sure you want to delete this event?");
 
-      await API.delete(`/events/${id}`);
+  if (!confirmDelete) return;
 
-      fetchEvents();
+  try {
+    await API.delete(`/events/${id}`);
 
-    } catch (err) {
-      console.log("Delete Error:", err);
-    }
-  };
+    // remove from UI instantly
+    setEvents(events.filter(ev => ev._id !== id));
+
+    alert("Event deleted successfully 🗑");
+
+  } catch (err) {
+    console.log("Delete Error:", err);
+    alert("Delete failed ❌");
+  }
+};
 
   const now = new Date();
 
-  // Stats
+  // ✅ Stats
   const total = events.length;
 
   const upcoming = events.filter((e) => {
-    const start = new Date(`${e.date}T${e.startTime}`);
+    const start = new Date(`${e.startDate}T${e.startTime}`);
     return start > now;
   }).length;
 
   const completed = events.filter((e) => {
-    const end = new Date(`${e.date}T${e.endTime}`);
+    const end = new Date(`${e.endDate}T${e.endTime}`);
     return end < now;
   }).length;
 
   const ongoing = events.filter((e) => {
-    const start = new Date(`${e.date}T${e.startTime}`);
-    const end = new Date(`${e.date}T${e.endTime}`);
+    const start = new Date(`${e.startDate}T${e.startTime}`);
+    const end = new Date(`${e.endDate}T${e.endTime}`);
     return start <= now && end >= now;
   }).length;
 
@@ -141,8 +148,8 @@ function AdminDashboard() {
 
           {events.map((ev) => {
 
-            const start = new Date(`${ev.date}T${ev.startTime}`);
-            const end = new Date(`${ev.date}T${ev.endTime}`);
+            const start = new Date(`${ev.startDate}T${ev.startTime}`);
+            const end = new Date(`${ev.endDate}T${ev.endTime}`);
 
             let status = "Upcoming";
 
@@ -178,7 +185,14 @@ function AdminDashboard() {
 
                 <div className="event-info">
 
-                  <p>📅 {new Date(ev.date).toDateString()}</p>
+                  {/* ✅ Date Range */}
+                  <p>
+                    📅 {
+                      ev.startDate === ev.endDate
+                        ? new Date(ev.startDate).toDateString()
+                        : `${new Date(ev.startDate).toDateString()} - ${new Date(ev.endDate).toDateString()}`
+                    }
+                  </p>
 
                   <p>📍 {ev.venue}</p>
 
@@ -228,12 +242,21 @@ function AdminDashboard() {
                   >
                     ✏ Edit
                   </button>
+
                   <button
-  className="scan-btn"
-  onClick={() => navigate(`/admin-scan?eventId=${ev._id}`)}
+                    className="scan-btn"
+                    onClick={() => navigate(`/admin-scan?eventId=${ev._id}`)}
+                  >
+                    📷 Scan
+                  </button>
+                  <button
+  className="export-btn"
+  onClick={() =>
+    window.open(`http://localhost:5000/api/events/${ev._id}/export-excel`)
+  }
 >
-            📷 Scan
-              </button>
+  📥 Export Excel
+</button>
 
                   <button
                     className="delete-btn"

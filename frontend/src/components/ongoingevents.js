@@ -16,10 +16,11 @@ function OngoingEvents() {
 
           const now = new Date();
 
+          // ✅ FIX: multi-day support
           const ongoing = res.data.filter(event => {
 
-            const start = new Date(`${event.date}T${event.startTime}`);
-            const end = new Date(`${event.date}T${event.endTime}`);
+            const start = new Date(`${event.startDate}T${event.startTime}`);
+            const end = new Date(`${event.endDate}T${event.endTime}`);
 
             return now >= start && now <= end;
 
@@ -40,14 +41,13 @@ function OngoingEvents() {
 
   }, []);
 
-  // ✅ FIXED REGISTER FUNCTION
   const registerEvent = async (id) => {
 
     try {
 
       await axios.post(
-        `http://localhost:5000/api/events/${id}/register`,  // ✅ correct URL
-        { email: studentEmail } // ✅ correct body
+        `http://localhost:5000/api/events/${id}/register`,
+        { email: studentEmail }
       );
 
       alert("Registered Successfully ✅");
@@ -95,9 +95,7 @@ function OngoingEvents() {
           )
           .map((event) => {
 
-            // ✅ FIXED COUNT
             const registeredCount = event.registrationCount || 0;
-
             const maxSeats = Number(event.maxRegistrations) || 0;
             const seatsLeft = maxSeats - registeredCount;
 
@@ -107,7 +105,6 @@ function OngoingEvents() {
             return (
 
               <div key={event._id}
-
                 style={{
                   width: "300px",
                   borderRadius: "12px",
@@ -134,12 +131,20 @@ function OngoingEvents() {
                     {event.description}
                   </p>
 
-                  <p>📅 {event.date}</p>
+                  {/* ✅ DATE RANGE FIX */}
+                  <p>
+                    📅 {
+                      event.startDate === event.endDate
+                        ? new Date(event.startDate).toDateString()
+                        : `${new Date(event.startDate).toDateString()} - ${new Date(event.endDate).toDateString()}`
+                    }
+                  </p>
+
                   <p>🕒 {event.startTime} - {event.endTime}</p>
                   <p>📍 {event.venue}</p>
 
                   <p>
-                    Registrations: {registeredCount} / {event.maxRegistrations}
+                    Registrations: {registeredCount} / {maxSeats}
                   </p>
 
                   {/* Progress Bar */}
@@ -149,14 +154,12 @@ function OngoingEvents() {
                     borderRadius: "5px",
                     marginBottom: "10px"
                   }}>
-
                     <div style={{
                       width: `${percentage}%`,
                       height: "8px",
                       background: "#4CAF50",
                       borderRadius: "5px"
                     }} />
-
                   </div>
 
                   <p style={{ color: seatsLeft < 5 ? "red" : "green" }}>
@@ -176,13 +179,11 @@ function OngoingEvents() {
                       cursor: "pointer"
                     }}
                   >
-
                     {seatsLeft <= 0
                       ? "Event Full"
                       : !studentEmail
                         ? "Login Required"
                         : "Register"}
-
                   </button>
 
                 </div>

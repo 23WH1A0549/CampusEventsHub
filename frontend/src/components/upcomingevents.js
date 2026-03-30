@@ -15,10 +15,8 @@ function UpcomingEvents() {
 
       try {
 
-        // ✅ 1. Get all events
         const eventRes = await axios.get("http://localhost:5000/api/events");
 
-        // ✅ 2. Get my events (for "already registered")
         const myRes = await axios.get(
           `http://localhost:5000/api/events/my-events/${studentEmail}`
         );
@@ -28,15 +26,17 @@ function UpcomingEvents() {
 
         const now = new Date();
 
+        // ✅ FIX: use startDate
         const upcoming = eventRes.data.filter(event => {
-          const start = new Date(`${event.date}T${event.startTime}`);
+          const start = new Date(`${event.startDate}T${event.startTime}`);
           return start > now;
         });
 
+        // ✅ FIX: sorting
         upcoming.sort(
           (a, b) =>
-            new Date(`${a.date}T${a.startTime}`) -
-            new Date(`${b.date}T${b.startTime}`)
+            new Date(`${a.startDate}T${a.startTime}`) -
+            new Date(`${b.startDate}T${b.startTime}`)
         );
 
         setEvents(upcoming);
@@ -67,13 +67,11 @@ function UpcomingEvents() {
 
       alert("Registered Successfully ✅");
 
-      // ✅ Refresh instead of reload
+      // better than reload
       window.location.reload();
 
     } catch (err) {
-
       alert(err.response?.data?.message || "Registration Failed ❌");
-
     }
 
   };
@@ -100,7 +98,6 @@ function UpcomingEvents() {
           )
           .map((event) => {
 
-            // ✅ FIXED LOGIC
             const maxSeats = Number(event.maxRegistrations) || 0;
             const registeredCount = event.registrationCount || 0;
             const seatsLeft = maxSeats - registeredCount;
@@ -139,7 +136,15 @@ function UpcomingEvents() {
                     {event.description}
                   </p>
 
-                  <p>📅 {event.date}</p>
+                  {/* ✅ DATE RANGE FIX */}
+                  <p>
+                    📅 {
+                      event.startDate === event.endDate
+                        ? new Date(event.startDate).toDateString()
+                        : `${new Date(event.startDate).toDateString()} - ${new Date(event.endDate).toDateString()}`
+                    }
+                  </p>
+
                   <p>🕒 {event.startTime} - {event.endTime}</p>
                   <p>📍 {event.venue}</p>
 
@@ -154,14 +159,12 @@ function UpcomingEvents() {
                     borderRadius: "5px",
                     marginBottom: "10px"
                   }}>
-
                     <div style={{
                       width: `${percentage}%`,
                       height: "8px",
                       background: "#4CAF50",
                       borderRadius: "5px"
                     }} />
-
                   </div>
 
                   <p style={{ color: seatsLeft < 5 ? "red" : "green" }}>

@@ -4,13 +4,12 @@ import "./dashboard.css";
 
 function StudentDashboard() {
   const [events, setEvents] = useState([]);
-  const [myEventIds, setMyEventIds] = useState([]); // ✅ NEW
+  const [myEventIds, setMyEventIds] = useState([]);
   const [now, setNow] = useState(new Date());
   const [search, setSearch] = useState("");
 
   const username = localStorage.getItem("name") || "Student";
 
-  // Fetch all events + my events
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -45,22 +44,22 @@ function StudentDashboard() {
     try {
       const email = localStorage.getItem("email");
 
-      await API.post(`/events/${id}/register`, { email, name: localStorage.getItem("name") });
+      await API.post(`/events/${id}/register`, {
+        email,
+        name: localStorage.getItem("name")
+      });
 
       alert("Registered Successfully ✅");
-
-      await fetchEvents(); // ✅ NO reload, instant update
+      await fetchEvents();
 
     } catch (err) {
       alert(err.response?.data?.message || "Registration Failed ❌");
     }
   };
 
-  const currentTime = now;
-
   // Countdown
-  const getCountdown = (date, time) => {
-    const eventStart = new Date(`${date}T${time}`);
+  const getCountdown = (startDate, time) => {
+    const eventStart = new Date(`${startDate}T${time}`);
     const diff = eventStart - now;
 
     if (diff <= 0) return "Started";
@@ -71,6 +70,8 @@ function StudentDashboard() {
 
     return `${hours}h ${minutes}m ${seconds}s`;
   };
+
+  const currentTime = now;
 
   return (
     <div>
@@ -106,29 +107,28 @@ function StudentDashboard() {
           )
           .sort(
             (a, b) =>
-              new Date(`${b.date}T${b.startTime}`) -
-              new Date(`${a.date}T${a.startTime}`)
+              new Date(`${b.startDate}T${b.startTime}`) -
+              new Date(`${a.startDate}T${a.startTime}`)
           )
           .map((ev) => {
 
-            const start = new Date(`${ev.date}T${ev.startTime}`);
-            const end = new Date(`${ev.date}T${ev.endTime}`);
+            const start = new Date(`${ev.startDate}T${ev.startTime}`);
+            const end = new Date(`${ev.endDate}T${ev.endTime}`);
 
             let status = "Upcoming";
             if (start <= currentTime && end >= currentTime) status = "Ongoing";
             else if (end < currentTime) status = "Completed";
 
-            // ✅ FIXED COUNT
             const registered = ev.registrationCount || 0;
             const maxSeats = ev.maxRegistrations || 1;
             const seatsLeft = maxSeats - registered;
             const percentage = (registered / maxSeats) * 100;
 
-            // ✅ CHECK REGISTERED
             const alreadyRegistered = myEventIds.includes(ev._id);
 
             return (
               <div className="event-card" key={ev._id}>
+
                 <img
                   src={ev.image || "https://via.placeholder.com/400x200"}
                   alt="event"
@@ -145,8 +145,17 @@ function StudentDashboard() {
                 <p className="event-desc">{ev.description}</p>
 
                 <div className="event-info">
+
                   <p>📍 {ev.venue}</p>
-                  <p>📅 {new Date(ev.date).toDateString()}</p>
+
+                  {/* ✅ Date Range */}
+                  <p>
+                    📅 {
+                      ev.startDate === ev.endDate
+                        ? new Date(ev.startDate).toDateString()
+                        : `${new Date(ev.startDate).toDateString()} - ${new Date(ev.endDate).toDateString()}`
+                    }
+                  </p>
 
                   <p>👥 {registered} / {maxSeats} Registered</p>
 
@@ -208,7 +217,7 @@ function StudentDashboard() {
 
                   {status === "Upcoming" && (
                     <p style={{ color: "#007bff", fontWeight: "bold" }}>
-                      ⏳ Starts in: {getCountdown(ev.date, ev.startTime)}
+                      ⏳ Starts in: {getCountdown(ev.startDate, ev.startTime)}
                     </p>
                   )}
                 </div>
@@ -228,6 +237,7 @@ function StudentDashboard() {
                     ? "Event Full"
                     : "Register"}
                 </button>
+
               </div>
             );
           })}
