@@ -36,8 +36,11 @@ const sendRegistrationEmail = async (userEmail, event) => {
         <p>You have successfully registered for:</p>
 
         <h3>${event.title}</h3>
-
-        <p><b>📅 Date:</b> ${new Date(event.date).toDateString()}</p>
+        <p>
+  <b>📅 Date:</b>
+  ${new Date(event.startDate).toDateString()} -
+  ${new Date(event.endDate).toDateString()}
+</p>
         <p><b>🕒 Time:</b> ${event.startTime} - ${event.endTime}</p>
         <p><b>📍 Venue:</b> ${event.venue}</p>
 
