@@ -235,7 +235,7 @@ Add screenshots of:
 ---
 
 ## 👩‍💻 Author
-
+**L.Alekhya**
 **Vaishnavi Minipuri**
 
 B.Tech – Computer Science & Engineering
